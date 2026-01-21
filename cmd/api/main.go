@@ -29,9 +29,8 @@ func main() {
 		panic(err)
 	}
 	defer func() {
-		if err := logger.Sync(); err != nil {
-			// Ignore sync errors on shutdown.
-		}
+		//nolint:errcheck
+		_ = logger.Sync()
 	}()
 
 	ctx := context.Background()

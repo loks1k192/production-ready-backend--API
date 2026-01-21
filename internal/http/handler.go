@@ -194,9 +194,8 @@ func parseIDParam(r *http.Request) (int64, error) {
 
 func decodeJSON(body io.ReadCloser, dst interface{}) error {
 	defer func() {
-		if err := body.Close(); err != nil {
-			// Best effort; nothing else to do in handler helpers.
-		}
+		//nolint:errcheck
+		_ = body.Close()
 	}()
 
 	decoder := json.NewDecoder(body)
@@ -207,9 +206,8 @@ func decodeJSON(body io.ReadCloser, dst interface{}) error {
 func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(payload); err != nil {
-		// Response might already be partially written; nothing else to do here.
-	}
+	//nolint:errcheck
+	_ = json.NewEncoder(w).Encode(payload)
 }
 
 func writeError(w http.ResponseWriter, status int, message string) {
