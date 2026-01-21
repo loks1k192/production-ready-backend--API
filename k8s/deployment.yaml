@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-backend
+  template:
+    metadata:
+      labels:
+        app: go-backend
+    spec:
+      containers:
+        - name: api
+          image: go-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: APP_ENV
+              value: prod
+            - name: HTTP_ADDR
+              value: :8080
+            - name: DB_DSN
+              value: postgres://postgres:postgres@postgres:5432/app?sslmode=disable
+            - name: AUTH_JWT_SECRET
+              value: change-me
+            - name: AUTH_TOKEN_TTL
+              value: 1h
+            - name: LOG_LEVEL
+              value: info
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 20
