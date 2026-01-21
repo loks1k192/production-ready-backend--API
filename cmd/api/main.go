@@ -28,7 +28,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer func() { _ = logger.Sync() }()
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			// Ignore sync errors on shutdown.
+		}
+	}()
 
 	ctx := context.Background()
 	database, err := db.New(ctx, cfg.DB)

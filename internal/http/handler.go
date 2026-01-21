@@ -193,7 +193,11 @@ func parseIDParam(r *http.Request) (int64, error) {
 }
 
 func decodeJSON(body io.ReadCloser, dst interface{}) error {
-	defer body.Close()
+	defer func() {
+		if err := body.Close(); err != nil {
+			// Best effort; nothing else to do in handler helpers.
+		}
+	}()
 
 	decoder := json.NewDecoder(body)
 	decoder.DisallowUnknownFields()
@@ -203,7 +207,9 @@ func decodeJSON(body io.ReadCloser, dst interface{}) error {
 func writeJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(payload)
+	if err := json.NewEncoder(w).Encode(payload); err != nil {
+		// Response might already be partially written; nothing else to do here.
+	}
 }
 
 func writeError(w http.ResponseWriter, status int, message string) {

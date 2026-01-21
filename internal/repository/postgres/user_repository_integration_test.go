@@ -22,14 +22,20 @@ func TestUserRepositoryCRUD(t *testing.T) {
 
 	container, dsn := startPostgresContainer(t, ctx)
 	t.Cleanup(func() {
-		_ = container.Terminate(ctx)
+		if err := container.Terminate(ctx); err != nil {
+			t.Logf("container terminate error: %v", err)
+		}
 	})
 
 	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
 		t.Fatalf("failed to open db: %v", err)
 	}
-	t.Cleanup(func() { _ = db.Close() })
+	t.Cleanup(func() {
+		if err := db.Close(); err != nil {
+			t.Logf("db close error: %v", err)
+		}
+	})
 
 	if err := db.PingContext(ctx); err != nil {
 		t.Fatalf("failed to ping db: %v", err)

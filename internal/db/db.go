@@ -25,7 +25,9 @@ func New(ctx context.Context, cfg config.DBConfig) (*sqlx.DB, error) {
 	defer cancel()
 
 	if err := db.PingContext(pingCtx); err != nil {
-		_ = db.Close()
+		if closeErr := db.Close(); closeErr != nil {
+			// Best effort cleanup; ignore close errors on ping failure.
+		}
 		return nil, err
 	}
 
