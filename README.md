@@ -1,5 +1,8 @@
 # Go Backend API
 
+[![CI](https://github.com/loks1k192/production-ready-backend--API/actions/workflows/ci.yml/badge.svg)](https://github.com/loks1k192/production-ready-backend--API/actions/workflows/ci.yml)
+![Go](https://img.shields.io/badge/Go-1.24-blue)
+
 Production-ready Go backend with REST API, JWT auth, PostgreSQL, metrics, and CI.
 
 ## Features
@@ -10,16 +13,34 @@ Production-ready Go backend with REST API, JWT auth, PostgreSQL, metrics, and CI
 - Health check at `/healthz`
 - Structured logging (zap)
 - Docker, docker-compose, and Kubernetes manifests
-- Unit + integration tests
+- Unit + integration tests (Postgres)
 
-## Local development
-### Docker Compose
+## Prerequisites
+- Go 1.24+
+- Docker + Docker Compose (for local stack and integration tests)
+- PostgreSQL 16+ (if running locally without Docker)
+- `golang-migrate` for database migrations
+
+## Quickstart (Docker Compose)
 ```bash
 docker-compose up --build
 ```
 
-### Go run
+Run migrations from your host:
 ```bash
+migrate -path migrations -database "postgres://postgres:postgres@localhost:5432/app?sslmode=disable" up
+```
+
+## Development (local, no Docker)
+```bash
+export APP_ENV=dev
+export HTTP_ADDR=:8080
+export DB_DSN="postgres://postgres:postgres@localhost:5432/app?sslmode=disable"
+export AUTH_JWT_SECRET="change-me"
+export AUTH_TOKEN_TTL=1h
+export LOG_LEVEL=info
+
+migrate -path migrations -database "$DB_DSN" up
 go run ./cmd/api
 ```
 
@@ -72,8 +93,34 @@ Migrations are in `migrations/`. You can run them with `golang-migrate`:
 migrate -path migrations -database "$DB_DSN" up
 ```
 
-## Testing
+## Testing & Linting
 ```bash
+gofmt -w .
+go vet ./...
 go test ./...
 go test -tags=integration ./...
 ```
+
+Install and run golangci-lint (same as CI):
+```bash
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.63.4
+golangci-lint run
+```
+
+## CI
+Workflow: `.github/workflows/ci.yml`
+- gofmt, go vet, unit tests, integration tests
+- golangci-lint (built with the Go toolchain from `go.mod`)
+- Docker build
+
+## Troubleshooting
+- `golangci-lint` version mismatch: install it via `go install` using the same Go version as `go.mod`, or rely on CI which builds it with the project toolchain.
+
+## Contributing
+Issues and PRs are welcome. Please keep code formatted with `gofmt` and ensure tests and lint pass.
+
+## License
+Not specified yet.
+
+## Contacts
+Maintainer: [loks1k192](https://github.com/loks1k192)
