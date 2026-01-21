@@ -1,7 +1,6 @@
 # Go Backend API
 
 [![CI](https://github.com/loks1k192/production-ready-backend--API/actions/workflows/ci.yml/badge.svg)](https://github.com/loks1k192/production-ready-backend--API/actions/workflows/ci.yml)
-![Go](https://img.shields.io/badge/Go-1.24-blue)
 
 Production-ready Go backend with REST API, JWT auth, PostgreSQL, metrics, and CI.
 
