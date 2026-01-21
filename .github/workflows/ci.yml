@@ -38,7 +38,7 @@ jobs:
       - name: Golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.64.0
+          version: v1.63.4
 
       - name: Docker build
         run: docker build -t go-backend:ci .
