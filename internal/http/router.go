@@ -22,11 +22,13 @@ func NewRouter(handler *Handler) http.Handler {
 	router.Handle("/metrics", metrics.Handler())
 
 	router.Route("/users", func(r chi.Router) {
-		r.Use(handler.AuthMiddleware)
 		r.Post("/", handler.CreateUser)
-		r.Get("/{id}", handler.GetUser)
-		r.Put("/{id}", handler.UpdateUser)
-		r.Delete("/{id}", handler.DeleteUser)
+		r.Group(func(r chi.Router) {
+			r.Use(handler.AuthMiddleware)
+			r.Get("/{id}", handler.GetUser)
+			r.Put("/{id}", handler.UpdateUser)
+			r.Delete("/{id}", handler.DeleteUser)
+		})
 	})
 
 	return router
