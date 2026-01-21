@@ -36,8 +36,6 @@ paths:
   /users:
     post:
       summary: Create user
-      security:
-        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -53,8 +51,6 @@ paths:
                 $ref: "#/components/schemas/User"
         "400":
           description: Invalid input
-        "401":
-          description: Unauthorized
   /users/{id}:
     get:
       summary: Get user by ID

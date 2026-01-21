@@ -46,7 +46,6 @@ curl -s -X POST http://localhost:8080/auth/login \
 ```bash
 curl -s -X POST http://localhost:8080/users \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $TOKEN" \
   -d '{"email":"user@example.com","password":"secret123","name":"User"}'
 ```
 
