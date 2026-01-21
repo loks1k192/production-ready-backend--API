@@ -30,6 +30,11 @@ func NewTokenManager(secret string, ttl time.Duration) *TokenManager {
 	}
 }
 
+// TTL returns token time-to-live.
+func (m *TokenManager) TTL() time.Duration {
+	return m.ttl
+}
+
 // Generate creates a signed JWT for a user.
 func (m *TokenManager) Generate(user models.User) (string, error) {
 	now := time.Now().UTC()

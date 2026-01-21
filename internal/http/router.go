@@ -15,8 +15,10 @@ func NewRouter(handler *Handler) http.Handler {
 	router.Use(middleware.Recoverer)
 
 	router.Get("/healthz", handler.Health)
+	router.Post("/auth/login", handler.Login)
 
 	router.Route("/users", func(r chi.Router) {
+		r.Use(handler.AuthMiddleware)
 		r.Post("/", handler.CreateUser)
 		r.Get("/{id}", handler.GetUser)
 		r.Put("/{id}", handler.UpdateUser)

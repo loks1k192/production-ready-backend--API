@@ -10,18 +10,20 @@ import (
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 
+	"github.com/loks1k192/go-backend/internal/auth"
 	"github.com/loks1k192/go-backend/internal/service"
 )
 
 // Handler bundles all HTTP handlers and dependencies.
 type Handler struct {
 	users  *service.UserService
+	tokens *auth.TokenManager
 	logger *zap.Logger
 }
 
 // NewHandler creates a new Handler instance.
-func NewHandler(users *service.UserService, logger *zap.Logger) *Handler {
-	return &Handler{users: users, logger: logger}
+func NewHandler(users *service.UserService, tokens *auth.TokenManager, logger *zap.Logger) *Handler {
+	return &Handler{users: users, tokens: tokens, logger: logger}
 }
 
 // Health responds with a basic health check.
@@ -48,6 +50,39 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, user)
+}
+
+// Login authenticates a user and returns a JWT.
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	var req loginRequest
+	if err := decodeJSON(r.Body, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid json")
+		return
+	}
+
+	user, err := h.users.Authenticate(r.Context(), req.Email, req.Password)
+	if err != nil {
+		if errors.Is(err, service.ErrInvalidInput) {
+			writeError(w, http.StatusUnauthorized, "invalid credentials")
+			return
+		}
+		h.logger.Error("auth error", zap.Error(err))
+		writeError(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
+	token, err := h.tokens.Generate(user)
+	if err != nil {
+		h.logger.Error("token error", zap.Error(err))
+		writeError(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, tokenResponse{
+		AccessToken: token,
+		TokenType:   "Bearer",
+		ExpiresIn:   int64(h.tokens.TTL().Seconds()),
+	})
 }
 
 // GetUser returns a user by ID.
@@ -135,6 +170,17 @@ type updateUserRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Name     string `json:"name"`
+}
+
+type loginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type tokenResponse struct {
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	ExpiresIn   int64  `json:"expires_in"`
 }
 
 type errorResponse struct {
