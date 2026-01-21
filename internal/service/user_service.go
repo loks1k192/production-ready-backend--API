@@ -86,6 +86,30 @@ func (s *UserService) GetByEmail(ctx context.Context, email string) (models.User
 	return user, nil
 }
 
+// Authenticate validates user credentials and returns the user on success.
+func (s *UserService) Authenticate(ctx context.Context, email, password string) (models.User, error) {
+	if err := validateEmail(email); err != nil {
+		return models.User{}, ErrInvalidInput
+	}
+	if strings.TrimSpace(password) == "" {
+		return models.User{}, ErrInvalidInput
+	}
+
+	user, err := s.repo.GetByEmail(ctx, strings.ToLower(strings.TrimSpace(email)))
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return models.User{}, ErrInvalidInput
+		}
+		return models.User{}, err
+	}
+
+	if err := s.hasher.Compare(ctx, user.HashedPassword, password); err != nil {
+		return models.User{}, ErrInvalidInput
+	}
+
+	return user, nil
+}
+
 // Update updates user fields after validation and password hashing.
 func (s *UserService) Update(ctx context.Context, input UpdateInput) (models.User, error) {
 	if input.ID <= 0 {
