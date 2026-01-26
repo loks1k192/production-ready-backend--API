@@ -2,35 +2,40 @@
 
 [![CI](https://github.com/loks1k192/production-ready-backend--API/actions/workflows/ci.yml/badge.svg)](https://github.com/loks1k192/production-ready-backend--API/actions/workflows/ci.yml)
 
-Production-ready Go backend with REST API, JWT auth, PostgreSQL, metrics, and CI.
+Production-ready backend на Go с REST API, JWT-аутентификацией, PostgreSQL, метриками и CI.
 
-## Features
-- REST CRUD for users
-- JWT auth (login endpoint + middleware)
-- PostgreSQL storage (sqlx)
-- Prometheus metrics at `/metrics`
-- Health check at `/healthz`
-- Structured logging (zap)
-- Docker, docker-compose, and Kubernetes manifests
-- Unit + integration tests (Postgres)
+Проект демонстрирует типичную архитектуру серверного приложения на Go, готового к использованию в продакшене.
 
-## Prerequisites
-- Go 1.24+
-- Docker + Docker Compose (for local stack and integration tests)
-- PostgreSQL 16+ (if running locally without Docker)
-- `golang-migrate` for database migrations
+## Возможности
+- REST CRUD API для пользователей
+- JWT-аутентификация (endpoint логина + middleware)
+- Хранение данных в PostgreSQL (через `sqlx`)
+- Метрики Prometheus по адресу `/metrics`
+- Health check по адресу `/healthz`
+- Структурированное логирование (zap)
+- Docker, docker-compose и Kubernetes-манифесты
+- Unit- и integration-тесты (с PostgreSQL)
 
-## Quickstart (Docker Compose)
+## Требования
+- Go версии 1.24 или выше
+- Docker и Docker Compose (для локального запуска и интеграционных тестов)
+- PostgreSQL 16+ (если запускать без Docker)
+- `golang-migrate` для управления миграциями БД
+
+## Быстрый старт (Docker Compose)
+Запуск всего стека:
 ```bash
 docker-compose up --build
-```
+````
 
-Run migrations from your host:
+Запуск миграций с хоста:
+
 ```bash
 migrate -path migrations -database "postgres://postgres:postgres@localhost:5432/app?sslmode=disable" up
 ```
 
-## Development (local, no Docker)
+## Разработка локально (без Docker)
+
 ```bash
 export APP_ENV=dev
 export HTTP_ADDR=:8080
@@ -43,42 +48,51 @@ migrate -path migrations -database "$DB_DSN" up
 go run ./cmd/api
 ```
 
-## Configuration
-Use environment variables (see `configs/env.example`).
+## Конфигурация
 
-Key variables:
-- `APP_ENV`: `dev` or `prod`
-- `HTTP_ADDR`: `:8080`
-- `DB_DSN`: `postgres://...`
-- `AUTH_JWT_SECRET`: JWT secret key
-- `AUTH_TOKEN_TTL`: token TTL (e.g. `1h`)
-- `LOG_LEVEL`: `debug|info|warn|error`
+Приложение настраивается через переменные окружения
+(см. пример в `configs/env.example`).
 
-## API quick start
-### Login
+Основные параметры:
+
+* `APP_ENV` — окружение (`dev` или `prod`)
+* `HTTP_ADDR` — HTTP-адрес сервера (например `:8080`)
+* `DB_DSN` — строка подключения к PostgreSQL
+* `AUTH_JWT_SECRET` — секретный ключ для JWT
+* `AUTH_TOKEN_TTL` — время жизни токена (например `1h`)
+* `LOG_LEVEL` — уровень логирования (`debug|info|warn|error`)
+
+## Быстрый старт API
+
+### Логин
+
 ```bash
 curl -s -X POST http://localhost:8080/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"user@example.com","password":"secret123"}'
 ```
 
-### Create user
+### Создание пользователя
+
 ```bash
 curl -s -X POST http://localhost:8080/users \
   -H "Content-Type: application/json" \
   -d '{"email":"user@example.com","password":"secret123","name":"User"}'
 ```
 
-### Get user
+### Получение пользователя
+
 ```bash
 curl -s http://localhost:8080/users/1 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 ## OpenAPI
-OpenAPI spec is located at `docs/openapi.yaml`.
 
-Swagger UI (Docker):
+OpenAPI-спецификация находится в `docs/openapi.yaml`.
+
+Запуск Swagger UI через Docker:
+
 ```bash
 docker run --rm -p 8081:8080 \
   -e SWAGGER_JSON=/openapi.yaml \
@@ -86,13 +100,17 @@ docker run --rm -p 8081:8080 \
   swaggerapi/swagger-ui
 ```
 
-## Migrations
-Migrations are in `migrations/`. You can run them with `golang-migrate`:
+## Миграции
+
+Все миграции лежат в директории `migrations/`.
+Для запуска используется `golang-migrate`:
+
 ```bash
 migrate -path migrations -database "$DB_DSN" up
 ```
 
-## Testing & Linting
+## Тестирование и линтинг
+
 ```bash
 gofmt -w .
 go vet ./...
@@ -100,26 +118,25 @@ go test ./...
 go test -tags=integration ./...
 ```
 
-Install and run golangci-lint (same as CI):
+Установка и запуск golangci-lint (аналогично CI):
+
 ```bash
 go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.63.4
 golangci-lint run
 ```
 
 ## CI
-Workflow: `.github/workflows/ci.yml`
-- gofmt, go vet, unit tests, integration tests
-- golangci-lint (built with the Go toolchain from `go.mod`)
-- Docker build
 
-## Troubleshooting
-- `golangci-lint` version mismatch: install it via `go install` using the same Go version as `go.mod`, or rely on CI which builds it with the project toolchain.
+Workflow находится в `.github/workflows/ci.yml` и включает:
 
-## Contributing
-Issues and PRs are welcome. Please keep code formatted with `gofmt` and ensure tests and lint pass.
+* gofmt, go vet
+* unit- и integration-тесты
+* golangci-lint (сборка с использованием версии Go из `go.mod`)
+* сборку Docker-образа
 
-## License
-Not specified yet.
+## Возможные проблемы
 
-## Contacts
-Maintainer: [loks1k192](https://github.com/loks1k192)
+* Несовпадение версии `golangci-lint`:
+  устанавливайте линтер через `go install`, используя ту же версию Go, что указана в `go.mod`,
+  либо ориентируйтесь на CI — там линтер собирается с нужным toolchain.
+
